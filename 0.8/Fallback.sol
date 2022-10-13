@@ -8,7 +8,7 @@ contract Fallback {
         emit Log("fallback", msg.sender, msg.value, msg.data);
     }
 
-    receive() external payable {
-        emit Log("receive", msg.sender, msg.value, "");
-    }
+    // receive() external payable {
+    //     emit Log("receive", msg.sender, msg.value, "");
+    // }
 }
