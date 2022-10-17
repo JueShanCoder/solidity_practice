@@ -2,20 +2,20 @@
 pragma solidity ^0.8;
 
 interface IERC20 {
-    // 代表当前合约的 token 总量。
+    // 代币发行总量
     function totalSupply() external view returns (uint);
-    // 代表当前账户的账户余额。
+    // 查询某个账户的代币余额
     function balanceOf(address account) external view returns (uint);
-    // 代表把账户中的余额由当前调用者发送到另一个账户中。
+    // 从当前的自己账户，实现代币的交易
     function transfer(address recipient, uint amount) external returns (bool);
 
-    // 查询某一账户对另一账户的批准额度
+    // 查询某个账户可转账金额。用于控制代币的交易
     function allowance(address owner, address spender) external view returns (uint);
 
-    // 对另一账户进行批准额度
+    // 设置允许某个账户 soender 从此地址可使用的代币数
     function approve(address spender, uint amount) external returns (bool);
 
-    // 向另一个合约存款时，另一个合约必须调用 transferFrom 方法才可以获取调用方的 token
+    // 实现用户之间的代币交易
     function transferFrom(address sender, address recipient, uint amount) external returns (bool);
 
     event Transfer(address indexed from, address indexed to, uint amount);
