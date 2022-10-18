@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.13;
 
 interface IERC721 {
     function transferFrom(
@@ -11,11 +11,11 @@ interface IERC721 {
 
 contract DutchAuction {
     uint private constant DURATION = 7 days;
-    
+
     IERC721 public immutable nft;
     uint public immutable nftId;
 
-    address public immutable seller;
+    address payable public immutable seller;
     uint public immutable startingPrice;
     uint public immutable startAt;
     uint public immutable expiresAt;
@@ -29,14 +29,11 @@ contract DutchAuction {
     ) {
         seller = payable(msg.sender);
         startingPrice = _startingPrice;
-        discountRate = _discountRate;
         startAt = block.timestamp;
         expiresAt = block.timestamp + DURATION;
+        discountRate = _discountRate;
 
-        require(
-            _startingPrice >= _discountRate * DURATION,
-            "starting price < discount"
-        );
+        require(_startingPrice >= _discountRate * DURATION, "starting price < min");
 
         nft = IERC721(_nft);
         nftId = _nftId;
@@ -48,7 +45,7 @@ contract DutchAuction {
         return startingPrice - discount;
     }
 
-    function but() external payable {
+    function buy() external payable {
         require(block.timestamp < expiresAt, "auction expired");
 
         uint price = getPrice();
@@ -59,6 +56,6 @@ contract DutchAuction {
         if (refund > 0) {
             payable(msg.sender).transfer(refund);
         }
-        selfdestruct(payable(seller));
+        selfdestruct(seller);
     }
 }
