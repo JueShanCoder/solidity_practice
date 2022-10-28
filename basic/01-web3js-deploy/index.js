@@ -1,4 +1,4 @@
-let web3 = require('web3');
+let Web3 = require('web3');
 let solc = require('solc');
 let fs = require('fs');
 
@@ -35,7 +35,8 @@ const bytecode= contractFile.evm.bytecode.object;
 const abi = contractFile.abi;
 
 // Create Web3 with goerli provider, you can change goerli to other testnet 
-const web3 = new Web3('https://goerli.infura.io/v3/' + process.env.INFURA_ID);
+// const web3 = new Web3('https://goerli.infura.io/v3/' + process.env.INFURA_ID);
+const web3 = new Web3('https://sepolia.infura.io/v3/' + process.env.INFURA_ID);
 
 // Create account from privatekey 
 const account = web3.eth.accounts.privateKeyToAccount(privateKey);
