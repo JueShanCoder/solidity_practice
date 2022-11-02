@@ -1,6 +1,6 @@
 require('dotenv').config();
-const HDWalletProvider = require('@truffle/hdwallet-provider');
-
+const HDWalletProvider = require('truffle-hdwallet-provider')
+const mnemonic = "59ecd607a26a982e1ab8efccbf92e37267e74929ac712c5332caf59728a35bf0";
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -12,6 +12,17 @@ module.exports = {
    * $ truffle test --network <network-name>
    */
   networks: {
+     development: {
+       host: "127.0.0.1",
+       port: 9545,
+       network_id: "*"
+     },
+    //  test: {
+    //    host: "127.0.0.1",
+    //    port: 7545,
+    //    network_id: "*"
+    //  }
+    //},
     ropsten: {
       provider: () =>
           new HDWalletProvider(
@@ -47,7 +58,7 @@ module.exports = {
               'https://sepolia.infura.io/v3/' + process.env.INFURA_ID
           ),
       network_id: '*',
-      gas: 3000000,
+      gas: 6721975,
       gasPrice: 10000000000,
     },
   },
