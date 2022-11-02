@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "ethereum-waffle": "^3.4.4"
+  }
+}
