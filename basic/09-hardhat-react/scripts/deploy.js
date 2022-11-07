@@ -35,7 +35,7 @@ function saveFrontendFiles(token, deployerAccount) {
   );
 
   const TokenArtifact = artifacts.readArtifactSync('SimpleToken');
-  s.writeFileSync(
+  fs.writeFileSync(
       contractsDir + '/SimpleToken.json',
       JSON.stringify(TokenArtifact, null, 2)
   )
