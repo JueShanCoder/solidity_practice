@@ -26,14 +26,14 @@ async function main() {
   // approve token number
   console.log(`allowance of ${deployer.address} to ${receiver} is `, (await token.allowance(deployer.address, receiver)).toString());
 
-  token.connect(receiver);
-  const bool = await token.transferFrom(deployer.address, account2, 100);
-  console.log(`transferFrom is  ${bool}`);
-
-  const ac1 = await token.balanceOf(deployer.address);
-  const ac2 = await token.balanceOf(receiver);
-  const ac3 = await token.balanceOf(account2);
-  console.log(`owner balance is: ${ac1.toString()}, receiver balance is: ${ac2.toString()}, account3 balance is ${ac3.toString()}`);
+  // token.connect(receiver);
+  // const bool = await token.transferFrom(deployer.address, account2, 100);
+  // console.log(`transferFrom is  ${bool}`);
+  //
+  // const ac1 = await token.balanceOf(deployer.address);
+  // const ac2 = await token.balanceOf(receiver);
+  // const ac3 = await token.balanceOf(account2);
+  // console.log(`owner balance is: ${ac1.toString()}, receiver balance is: ${ac2.toString()}, account3 balance is ${ac3.toString()}`);
 }
 
 main()
