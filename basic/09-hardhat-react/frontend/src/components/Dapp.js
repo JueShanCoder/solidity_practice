@@ -108,7 +108,7 @@ export class Dapp extends React.Component {
                         <p>
                             Welcome <b>{this.state.selectedAddress}</b>, you have{' '}
                             <b>
-                                {/* show human read balance (deployed contract with precise 1 in /scripts/deploy.js) */}
+                                {/* show human read balance (deployed contract with precise 1 in /scripts/deploy-ipfs.js) */}
                                 {this.state.balance/10**this.state.decimals} {this.state.tokenData.symbol}
                             </b>
                             .

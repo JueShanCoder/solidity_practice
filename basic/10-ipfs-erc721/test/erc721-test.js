@@ -1,5 +1,17 @@
 require("@nomiclabs/hardhat-waffle");
 const { expect } = require("chai");
+const { BigNumber, utils } = ethers;
+const { parseEther, formatEther, keccak256, toUtf8Bytes } = utils;
+
+const toWei = (value) => parseEther(value.toString());
+const fromWei = (value) =>
+    formatEther(
+        typeof value === "string" ? value : value.toString()
+    );
+
+const getBalance = ethers.provider.getBalance;
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 
 describe("MYERC721 contract", function () {
     let deployer, other;
@@ -24,7 +36,7 @@ describe("MYERC721 contract", function () {
         expect(await token.name()).to.equal(name);
     });
 
-    it('should token has correct symbol', async () => {
+    it('token has correct symbol', async () => {
         expect(await token.symbol()).to.equal(symbol);
     });
 
@@ -44,6 +56,29 @@ describe("MYERC721 contract", function () {
 
     it("minter role admin is the default admin", async function () {
         expect(await token.getRoleAdmin(MINTER_ROLE)).to.equal(DEFAULT_ADMIN_ROLE);
+    });
+
+    describe("minting", function () {
+        it("deployer can mint tokens", async function () {
+            const tokenId = BigNumber.from("0");
+
+            expect(await token.balanceOf(other.address)).to.be.equal("0");
+
+            await expect(token.mint(other.address, { from: deployer.address }))
+                .to.emit(token, "Transfer")
+                .withArgs(ZERO_ADDRESS, other.address, tokenId);
+
+            expect(await token.balanceOf(other.address)).to.be.equal("1");
+            expect(await token.ownerOf(tokenId)).to.equal(other.address);
+            console.log('11111111:',await token.tokenURI(tokenId));
+            expect(await token.tokenURI(tokenId)).to.equal(baseURI + tokenId);
+        });
+
+        it("other accounts cannot mint tokens", async function () {
+            await expect(token.connect(other).mint(other.address)).to.be.revertedWith(
+                "ERC721PresetMinterPauserAutoId: must have minter role to mint"
+            );
+        });
     });
 
     describe("pausing", function () {
