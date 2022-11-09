@@ -18,10 +18,14 @@ contract MemberVote {
         bool approved;
     }
 
+    // 投资俱乐部成员池
     mapping(address => bool) public members;
+    // 资金明细池
     mapping(address => uint) public shares;
+    // 投资投票池
     mapping(address => mapping(uint => bool)) public votes;
-    mapping(uint => Proposal) public Proposals;
+    // 投资池
+    mapping(uint => Proposal) public proposals;
 
     // 总计
     uint public totalShares;
@@ -33,9 +37,20 @@ contract MemberVote {
     uint public nextProposalId;
     // 投票
     uint public voteTime;
-    // 成员人数
+    // 批准同意人数
     uint public quorum;
+    // 俱乐部发起者
     address public owner;
+
+    modifier onlyMembers() {
+        require(members[msg.sender] == true, "only members");
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "only owner");
+        _;
+    }
 
     constructor(uint contributionTime, uint _voteTime, uint _quorum) public {
         require(_quorum > 1, 'quorum must be more than 1 member');
@@ -45,6 +60,7 @@ contract MemberVote {
         owner = msg.sender;
     }
 
+    // 参与俱乐部
     function contribute() payable external {
         require(block.timestamp < contributionEnd, 'cannot contribute after contributionEnd');
         members[msg.sender] = true;
@@ -53,14 +69,71 @@ contract MemberVote {
         availableFunds += msg.value;
     }
 
+    // 撤销参与
     function redeemShare(uint amount) external {
         require(shares[msg.sender] >= amount, 'not enough shares');
         require(availableFunds >= amount, 'not enough available funds');
         shares[msg.sender] -= amount;
         availableFunds -= amount;
-        msg.sender.transfer(amount);
+        payable (msg.sender).transfer(amount);
     }
 
+    // 转移
+    function transferShare(uint amount, address payable to) external {
+        require(shares[msg.sender] >= amount, "not enough shares");
+        shares[msg.sender] -= amount;
+        shares[to] += amount;
+        members[to] = true;
+    }
 
+    // 申请投资提议
+    function createProposal(string calldata name, uint amount, address payable recipient) external onlyMembers() {
+        require(availableFunds >= amount, 'amount too big');
+        proposals[nextProposalId] = Proposal(
+        nextProposalId,
+        name,
+        amount,
+        recipient,
+        0,
+        block.timestamp + voteTime,
+        false
+        );
+        nextProposalId ++;
+    }
 
+    // 投票
+    function vote(uint proposalId) external onlyMembers {
+        Proposal storage proposal = proposals[proposalId];
+        require(votes[msg.sender][proposalId] == false, 'members can only vote once for a proposal');
+        require(block.timestamp < proposal.end, 'can only vote util proposal end date');
+        votes[msg.sender][proposalId] = true;
+        proposal.votes += shares[msg.sender];
+    }
+
+    // 批准投资
+    function approveProposal(uint proposalId) external onlyOwner() {
+        Proposal storage proposal = proposals[proposalId];
+        require(block.timestamp >= proposal.end, 'cannot approve proposal before end date');
+        require(proposal.approved == false, 'current proposal already approved');
+        // ???
+        require(((proposal.votes * 100) / totalShares) >= quorum, 'cannot approve proposal with votes $ below quorum');
+        proposal.approved = true;
+        _transferEther(proposal.amount, proposal.recipient);
+    }
+
+    // 管理员提现
+    function withdrawEther(uint amount, address payable to) external onlyOwner() {
+        _transferEther(amount, to);
+    }
+
+    //
+    function _transferEther(uint amount, address payable to) internal {
+        require(amount <= availableFunds, 'not enough availableFund');
+        availableFunds -= amount;
+        to.transfer(amount);
+    }
+
+    function receive() payable external {
+        availableFunds += msg.value;
+    }
 }

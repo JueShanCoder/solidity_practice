@@ -73,11 +73,11 @@ contract Project {
         if (currentBalance >= amountGoal) {
             state = State.Successful;
             payOut();
-        } else if (now > raiseBy) {
+        } else if (block.timestamp > raiseBy) {
             state = State.Expired;
         }
 
-        completeAt = now;
+        completeAt = block.timestamp;
     }
 
     function payOut() internal inState(State.Successful) returns (bool) {
@@ -100,11 +100,11 @@ contract Project {
         uint amountToRefund = contributions[msg.sender];
         contributions[msg.sender] = 0;
 
-        if (!msg.sender.send(amountToRefund)) {
+        if (!payable(msg.sender).send(amountToRefund)) {
             contributions[msg.sender] = amountToRefund;
             return false;
         } else {
-            currentBalance = contributions.sub(amountToRefund);
+            currentBalance = currentBalance.sub(amountToRefund);
         }
         return true;
     }
