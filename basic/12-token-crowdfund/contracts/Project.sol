@@ -109,7 +109,7 @@ contract Project {
         return true;
     }
 
-    function getDetail() public view returns
+    function getDetails() public view returns
     (
         address payable projectStarter,
         string memory projectTitle,

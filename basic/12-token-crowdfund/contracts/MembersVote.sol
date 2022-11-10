@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
  * 4.允许创建和投票投票
  * 5.批准成功的投资建议（即汇款）
  */
-contract MemberVote {
+contract MembersVote {
     struct Proposal {
         uint id;
         string name;
