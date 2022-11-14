@@ -10,9 +10,9 @@ contract Token {
 
     function balanceOf(address _owner) public view virtual returns (uint256 balance) {}
 
-    function transfer(address _to, uint256 _value) public view virtual returns (bool success) {}
+    function transfer(address _to, uint256 _value) public virtual returns (bool success) {}
 
-    function transferFrom(address _from, address _to, uint256 _value) public view virtual returns (bool success) {}
+    function transferFrom(address _from, address _to, uint256 _value) public virtual returns (bool success) {}
 
     function approve(address _spender, uint256 _value) public virtual returns (bool success) {}
 
@@ -38,7 +38,7 @@ contract StandardToken is Token {
 
     uint256 public totalSupply;
 
-    function transfer(address _to, uint256 _value) public override returns (bool success) {
+    function transfer(address _to, uint256 _value) public virtual override returns (bool success) {
         if (balances[msg.sender] >= _value && balances[_to] + _value > balances[_to]) {
             balances[msg.sender] -= _value;
             balances[_to] += _value;
@@ -48,7 +48,7 @@ contract StandardToken is Token {
         return false;
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public override returns (bool success) {
+    function transferFrom(address _from, address _to, uint256 _value) public virtual override returns (bool success) {
         if (
             // 判断授权账户余额足够
             balances[_from] >= _value &&
@@ -112,7 +112,7 @@ contract AccountLevels {
     function accountLevel(address user) public view virtual returns (uint256) {}
 }
 
-contract AccountLevelTest is AccountLevels {
+contract AccountLevelsTest is AccountLevels {
     mapping(address => uint256) public accountLevels;
 
     function setAccountLevel(address user, uint256 level) public {
@@ -125,7 +125,7 @@ contract AccountLevelTest is AccountLevels {
 }
 
 // 交易所核心合约
-// 用户交易用的资产必须先存入（ desposit() ）交易合约，交易完成后，可以提现（ withdraw() ）到自己钱包，基本和中心化交易所流程相同
+// 用户交易用的资产必须先存入（ deposit() ）交易合约，交易完成后，可以提现（ withdraw() ）到自己钱包，基本和中心化交易所流程相同
 contract EtherDelta {
     using SafeMath for *;
 
@@ -150,12 +150,19 @@ contract EtherDelta {
     mapping(address => mapping(bytes32 => uint256)) public orderFills;
 
     struct OrderSigned {
+        // token 支出的地址
         address tokenGet;
+        // amount 支出的地址
         uint256 amountGet;
+        // 收入 token 的地址
         address tokenGive;
+        // 收入 amount 的地址
         uint256 amountGive;
+        // 超时时间
         uint256 expires;
+        // 随机数
         uint256 nonce;
+        // 用户地址
         address user;
         uint8 v;
         bytes32 r;
@@ -351,7 +358,7 @@ contract EtherDelta {
                     orderSigned.v,
                     orderSigned.r,
                     orderSigned.s
-                ) == OrderSigned.user) &&
+                ) == orderSigned.user) &&
                 block.number <= orderSigned.expires &&
                 SafeMath.add(orderFills[orderSigned.user][hash], amount) <= orderSigned.amountGet
             ),"permit not pass"
