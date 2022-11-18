@@ -150,13 +150,13 @@ contract EtherDelta {
     mapping(address => mapping(bytes32 => uint256)) public orderFills;
 
     struct OrderSigned {
-        // token 支出的地址
+        // 支出方的 token 地址
         address tokenGet;
-        // amount 支出的地址
+        // 支出方的支出 token 数量
         uint256 amountGet;
-        // 收入 token 的地址
+        // 收入方的 token 地址
         address tokenGive;
-        // 收入 amount 的地址
+        // 收入方的收入 token 数量
         uint256 amountGive;
         // 超时时间
         uint256 expires;
@@ -400,6 +400,7 @@ contract EtherDelta {
         uint256 feeMakeXfer = SafeMath.mul(amount, feeMake) / (1 ether);
         // 卖出手续费
         uint256 feeTakeXfer = SafeMath.mul(amount, feeTake) / (1 ether);
+        // VIP 佣金回扣费率
         uint256 feeRebateXfer = 0;
 
         if (accountLevelsAddr != address(0)) {
