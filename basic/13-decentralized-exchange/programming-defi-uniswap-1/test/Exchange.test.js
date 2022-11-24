@@ -39,6 +39,20 @@ describe("Exchange", () => {
             expect(await getBalance(exchange.address)).to.equal(toWei(100));
             expect(await exchange.getReserve()).to.equal(toWei(200));
         });
+
+        it('mint LP tokens', async function () {
+            await token.approve(exchange.address, toWei(200));
+            await exchange.addLiquidity(toWei(200), {value: toWei(100)});
+            expect(await exchange.balanceOf(owner.address)).to.eq(toWei(100));
+            expect(await exchange.totalSupply()).to.eq(toWei(100));
+        });
+
+        it('allow zero amounts', async function () {
+            await token.approve(exchange.address, 0);
+            await exchange.addLiquidity(0, { value: 0});
+            expect(await getBalance(exchange.address)).to.equal(0);
+            expect(await exchange.getReserve()).to.equal(0);
+        });
     })
 
     describe("getTokenAmount", async () => {
