@@ -89,7 +89,6 @@ contract Exchange is ERC20{
         uint256 inputAmountWithFee = inputAmount * 99;
         uint numerator = inputAmountWithFee * outputReserve;
         uint256 denominator = (inputReserve * 100) + inputAmountWithFee;
-
         return numerator / denominator;
     }
 
@@ -113,6 +112,7 @@ contract Exchange is ERC20{
         uint tokenReserve = getReserve();
         uint tokenBought = getAmount(msg.value, address(this).balance - msg.value, tokenReserve);
 
+        console.log("[ethToTokenSwap] tokenReserve %s, balance %s, tokenBought %s", tokenReserve, (address(this).balance - msg.value), tokenBought);
         require(tokenBought >= _minTokens, "insufficient output amount");
 
         IERC20(tokenAddress).transfer(msg.sender, tokenBought);
@@ -125,7 +125,7 @@ contract Exchange is ERC20{
             tokenReserve,
             address(this).balance
         );
-
+        console.log("[tokenToEthSwap] tokenReserve %s, ethBought %s", tokenReserve, ethBought);
         require(ethBought >= _minEth, "insufficient output amount");
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), _tokenSold);
         payable(msg.sender).transfer(ethBought);
