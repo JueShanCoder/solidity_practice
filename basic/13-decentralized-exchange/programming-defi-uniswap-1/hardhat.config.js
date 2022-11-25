@@ -1,4 +1,9 @@
 require("@nomiclabs/hardhat-waffle");
+const { utils } = require("ethers");
+const { ethers } = require("ethers");
+const { BigNumber } = ethers;
+
+const GAS_PRICE = BigNumber.from("1000000000");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -17,5 +22,16 @@ task("accounts", "Prints the list of accounts", async () => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
+  networks: {
+    hardhat: {
+      accounts: {
+        // 初始化账户给 1000000 eth 默认 100 不够用
+        accountsBalance: utils.parseEther("1000000").toString(),
+      },
+      // gasPrice 1000000000 默认 8000000000
+      // 便于计算gas费用
+      gasPrice: GAS_PRICE.toNumber(),
+    },
+  },
   solidity: "0.8.4",
 };
