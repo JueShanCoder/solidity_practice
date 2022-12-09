@@ -11,6 +11,7 @@ contract Factory {
             tokenToExchange[_tokenAddress] == address(0),
             "exchange already exists"
         );
+
         Exchange exchange = new Exchange(_tokenAddress);
         tokenToExchange[_tokenAddress] = address(exchange);
 

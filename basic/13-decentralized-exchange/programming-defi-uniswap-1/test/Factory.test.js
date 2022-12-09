@@ -29,9 +29,43 @@ describe('Factory', function () {
             const exchangeAddress = await factory.callStatic.createExchange(
                 token.address
             );
-            await factory.createExchange();
-            expect(await factory.getExchange(token.address)).to.equal(exchangeAddress);
+            await factory.createExchange(token.address);
+            expect(await factory.tokenToExchange(token.address)).to.equal(
+                exchangeAddress
+            );
+
+            const Exchange = await ethers.getContractFactory("Exchange");
+            const exchange = await Exchange.attach(exchangeAddress);
+            expect(await exchange.name()).to.equal("uniswap-V1");
+            expect(await exchange.symbol()).to.equal("UNI-V1");
+            expect(await exchange.factoryAddress()).to.equal(factory.address);
+        });
+
+        it("doesn't allow zero address", async () => {
+            await expect(
+                factory.createExchange("0x0000000000000000000000000000000000000000")
+            ).to.be.revertedWith("invalid token address");
+        });
+
+        it("fails when exchange exists", async () => {
+            await factory.createExchange(token.address);
+
+            await expect(factory.createExchange(token.address)).to.be.revertedWith(
+                "exchange already exists"
+            );
         });
     });
 
+    describe("getExchange", () => {
+        it("returns exchange address by token address", async () => {
+            const exchangeAddress = await factory.callStatic.createExchange(
+                token.address
+            );
+            await factory.createExchange(token.address);
+
+            expect(await factory.getExchange(token.address)).to.equal(
+                exchangeAddress
+            );
+        });
+    });
 });
