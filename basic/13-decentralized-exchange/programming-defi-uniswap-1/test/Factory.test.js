@@ -29,6 +29,8 @@ describe('Factory', function () {
             const exchangeAddress = await factory.callStatic.createExchange(
                 token.address
             );
+            await factory.createExchange();
+            expect(await factory.getExchange(token.address)).to.equal(exchangeAddress);
         });
     });
 
