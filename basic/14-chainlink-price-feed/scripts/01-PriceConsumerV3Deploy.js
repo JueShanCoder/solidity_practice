@@ -11,11 +11,12 @@ async function main() {
     );
 
     // PRICE_FEED_CONTRACT 在 goerli 上的合约地址
-    const PRICE_FEED_CONTRACT="0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e";
+    const ETH_USD_PRICE_FEED_CONTRACT="0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e";
+    const BTC_ETH_PRICE_FEED_CONTRACT="0x779877A7B0D9E8603169DdbD7836e478b4624789";
 
     // 部署 PriceConsumerV3 合约
     const priceConsumerV3 = await ethers.getContractFactory("PriceConsumerV3");
-    const PriceConsumerV3Ins = await priceConsumerV3.deploy(PRICE_FEED_CONTRACT);
+    const PriceConsumerV3Ins = await priceConsumerV3.deploy(ETH_USD_PRICE_FEED_CONTRACT);
 
     console.log("----------------------------------------------------")
     console.log("PriceConsumerV3 address:", PriceConsumerV3Ins.address);
