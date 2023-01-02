@@ -1,23 +1,27 @@
+// contracts/DungeonsAndDragonsCharacter.sol
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
 import '@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol';
 import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
 
-contract DungeonsAndDragonsCharacter is ERC721PresetMinterPauserAutoId, VRFConsumerBaseV2 {
+contract DungeonsAndDragonsCharacter is ERC721PresetMinterPauserAutoId, ERC721URIStorage, VRFConsumerBaseV2 {
+
     using Strings for string;
 
-    event FulfillRandomness(uint256, uint256[]);
-    event RequestId(address, uint256);
+    event FulfillRandomness(uint256,uint256[]);
+    event RequestId(address,uint256);
 
     VRFCoordinatorV2Interface COORDINATOR;
     LinkTokenInterface LINKTOKEN;
 
+    // Your subscription ID.
     uint64 s_subscriptionId;
 
     // Goerli coordinator. For other networks,
@@ -64,20 +68,26 @@ contract DungeonsAndDragonsCharacter is ERC721PresetMinterPauserAutoId, VRFConsu
 
     Character[] public characters;
 
-    mapping(uint256 => string)  requestToCharacterName;
+    mapping(uint256 => string) requestToCharacterName;
     mapping(uint256 => address) requestToSender;
-    mapping(uint256 => uint256) requestToRandomNum;
+    mapping(uint256 => uint256) requestToRandnum;
 
-    constructor(uint64 subscriptionId, string memory tokenURI) public VRFConsumerBaseV2(vrfCoordinator)
-    ERC721PresetMinterPauserAutoId('DungeonsAndDragonsCharacter', "D&D", tokenURI) {
+    constructor(uint64 subscriptionId,string memory tokenURI)
+    public
+    VRFConsumerBaseV2(vrfCoordinator)
+    ERC721PresetMinterPauserAutoId("DungeonsAndDragonsCharacter", "D&D",tokenURI)
+    {
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
         LINKTOKEN = LinkTokenInterface(link);
         s_subscriptionId = subscriptionId;
     }
 
-    function requestNewRandomCharacter(string memory name) public returns (uint256) {
+    function requestNewRandomCharacter(
+        string memory name
+    ) public returns (uint256) {
+        // Will revert if subscription is not set and funded.
         uint256 requestId = COORDINATOR.requestRandomWords(keyHash, s_subscriptionId, requestConfirmations, callbackGasLimit, numWords);
-        emit RequestId(msg.sender, requestId);
+        emit RequestId(msg.sender,requestId);
 
         requestToCharacterName[requestId] = name;
         requestToSender[requestId] = msg.sender;
@@ -86,15 +96,115 @@ contract DungeonsAndDragonsCharacter is ERC721PresetMinterPauserAutoId, VRFConsu
 
     function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
         require(
-            _isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved"
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            "ERC721: transfer caller is not owner nor approved"
         );
         _setTokenURI(tokenId, _tokenURI);
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
-        requestToRandomNum[requestId] = randomWords[0];
-        emit FulfillRandomness(requestId, randomWords);
+    function fulfillRandomWords(
+        uint256 requestId, /* requestId */
+        uint256[] memory randomWords)
+    internal override
+    {
+        requestToRandnum[requestId] = randomWords[0];
+
+        emit FulfillRandomness(requestId,randomWords);
     }
 
+    function blindCharacter(uint256 requestId) public {
+        uint256 randomNum = requestToRandnum[requestId];
+        uint256 newId = characters.length;
+        uint256 strength = (randomNum % 100);
+        uint256 dexterity = ((randomNum % 10000) / 100 );
+        uint256 constitution = ((randomNum % 1000000) / 10000 );
+        uint256 intelligence = ((randomNum % 100000000) / 1000000 );
+        uint256 wisdom = ((randomNum % 10000000000) / 100000000 );
+        uint256 charisma = ((randomNum % 1000000000000) / 10000000000);
+        uint256 experience = 0;
 
+        characters.push(
+            Character(
+                strength,
+                dexterity,
+                constitution,
+                intelligence,
+                wisdom,
+                charisma,
+                experience,
+                requestToCharacterName[requestId]
+            )
+        );
+        _safeMint(requestToSender[requestId], newId);
+    }
+
+    function getLevel(uint256 tokenId) public view returns (uint256) {
+        return sqrt(characters[tokenId].experience);
+    }
+
+    function getNumberOfCharacters() public view returns (uint256) {
+        return characters.length;
+    }
+
+    function getCharacterOverView(uint256 tokenId)
+    public
+    view
+    returns (
+        string memory,
+        uint256,
+        uint256,
+        uint256
+    )
+    {
+        return (
+        characters[tokenId].name,
+        characters[tokenId].strength + characters[tokenId].dexterity + characters[tokenId].constitution + characters[tokenId].intelligence + characters[tokenId].wisdom + characters[tokenId].charisma,
+        getLevel(tokenId),
+        characters[tokenId].experience
+        );
+    }
+
+    function sqrt(uint256 x) internal view returns (uint256 y) {
+        uint256 z = (x + 1) / 2;
+        y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
+    }
+
+    function _baseURI() internal view virtual override(ERC721PresetMinterPauserAutoId, ERC721) returns (string memory) {
+        return super._baseURI();
+    }
+
+    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+        super._burn(tokenId);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+    public
+    view
+    override(ERC721, ERC721PresetMinterPauserAutoId)
+    returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function tokenURI(uint256 tokenId)
+    public
+    view
+    override(ERC721, ERC721URIStorage)
+    returns (string memory)
+    {
+        return super.tokenURI(tokenId);
+    }
+
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
+    internal
+    whenNotPaused
+    override(ERC721, ERC721PresetMinterPauserAutoId)
+    {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+    }
 }
+
