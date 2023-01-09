@@ -11,7 +11,7 @@
   },
   "scripts": {
     "chain": "hardhat node",
-    "deploy": "npx hardhat run ./scripts/deploy.js"
+    "deploy": "npx hardhat run scripts/deploy.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.2",
