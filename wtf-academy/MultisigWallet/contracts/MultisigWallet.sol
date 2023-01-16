@@ -63,7 +63,7 @@ contract MultisigWallet {
 
     function checkSignatures(
         bytes32 dataHash,
-        bytes32 memory signatures
+        bytes memory signatures
     ) public view {
         uint256 _threshold = threshold;
         require(_threshold > 0, "WTF5005");
